@@ -18,20 +18,29 @@
           </tbody>
         </template>
       </v-simple-table>
+      <v-btn @click="onClickRefresh">Atualizar</v-btn>
     </v-col>
   </v-card>
 </template>
 
 <script>
-import { getUser } from '@/_services/userServices';
+import { createNamespacedHelpers } from 'vuex';
+
+const { mapState, mapActions } = createNamespacedHelpers('ranking');
 
 export default {
   name: 'Ranking',
-  data: () => ({
-    users: [],
-  }),
-  async mounted() {
-    this.users = await getUser();
+  computed: {
+    ...mapState(['users']),
+  },
+  methods: {
+    ...mapActions(['getUsers']),
+    onClickRefresh() {
+      this.getUsers();
+    },
+  },
+  mounted() {
+    this.getUsers();
   },
 };
 </script>

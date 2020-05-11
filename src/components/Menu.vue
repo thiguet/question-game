@@ -2,7 +2,7 @@
   <div>
     <v-navigation-drawer color="indigo" v-model="opened" dark app>
       <v-list dense>
-        <router-link :key="index" v-for="(menu, index) in getAvaiableMenus()" :to="menu.path">
+        <router-link :key="index" v-for="(menu, index) in getAvaiableMenus" :to="menu.path">
           <v-list-item @click="closeMenu" link>
             <v-list-item-action>
               <v-icon>{{menu.icon}}</v-icon>
@@ -12,8 +12,8 @@
             </v-list-item-content>
           </v-list-item>
         </router-link>
-        <router-link v-if="isLoggedIn" @click="logout" to="/l">
-          <v-list-item link>
+        <router-link v-if="isLoggedIn" :to="LogoutRoute">
+          <v-list-item @click="logout" link>
             <v-list-item-action>
               <v-icon>mdi-logout</v-icon>
             </v-list-item-action>
@@ -26,47 +26,68 @@
     </v-navigation-drawer>
     <v-app-bar app color="indigo" dark>
       <v-app-bar-nav-icon @click.stop="opened = !opened" />
-      <v-toolbar-title>{{activeMenu}}</v-toolbar-title>
+      <v-toolbar-title class="you-toolbar">{{activeMenu}}</v-toolbar-title>
+      <v-spacer></v-spacer>
+      <v-toolbar-title class="you-toolbar" v-if="userName">Você: {{userName}}</v-toolbar-title>
     </v-app-bar>
   </div>
 </template>
 
 <script>
+import RoutesPath from '@/router/types';
+import { createNamespacedHelpers } from 'vuex';
 import menus from '@/router/routes';
-import { currentUser, logout } from '@/_services/authServices';
+
+const { mapState, mapGetters, mapActions } = createNamespacedHelpers('user');
 
 export default {
-  name: 'App',
+  name: 'Menu',
   data: () => ({
     opened: false,
     menus,
+    LogoutRoute: RoutesPath.Logout,
   }),
   computed: {
+    ...mapState(['user']),
+    ...mapGetters(['userName', 'role']),
     activeMenu() {
       return this.$route.name;
     },
     isLoggedIn() {
-      return false;
-    },
-  },
-  methods: {
-    closeMenu() {
-      this.opened = false;
-    },
-    logout() {
-      logout();
+      return !!this.role;
     },
     getAvaiableMenus() {
-      const { role } = currentUser;
-
+      const { role } = this;
       const avaiableMenus = menus.filter((m) => {
         const { meta } = m;
         const { authorize } = meta;
 
-        return (authorize.length && authorize.includes(role)) || (!authorize.length);
+        const menuHasAccessControl = authorize.length !== 0;
+        const menuIsVisible = m.showOnMenu;
+        const isUserPermitted = menuHasAccessControl && authorize.includes(role);
+
+        if (!role) {
+          return (menuIsVisible && !menuHasAccessControl);
+        }
+        if (menuHasAccessControl) {
+          return menuIsVisible && isUserPermitted;
+        }
+
+        return false;
       });
 
       return avaiableMenus;
+    },
+  },
+  methods: {
+    ...mapActions({
+      logoutAction: 'logout',
+    }),
+    closeMenu() {
+      this.opened = false;
+    },
+    logout() {
+      this.logoutAction();
     },
   },
 };
@@ -74,6 +95,9 @@ export default {
 
 <style scoped>
 .v-application a {
-    text-decoration: none;
+  text-decoration: none;
+}
+.you-toolbar {
+  font-size: 16px;
 }
 </style>

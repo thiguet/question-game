@@ -1,9 +1,15 @@
 import Vue from 'vue';
 import VueRouter from 'vue-router';
 import routes from '@/router/routes';
-// import authenticationService from '@/_services/authServices';
+import store from '@/store/';
+import { getUser } from '@/_services/userServices';
 
 Vue.use(VueRouter);
+
+const specialPaths = [
+  '/a',
+  '/',
+];
 
 const router = new VueRouter({
   mode: 'history',
@@ -11,20 +17,22 @@ const router = new VueRouter({
   routes,
 });
 
-// router.beforeEach((to, from, next) => {
-//   const { authorize } = to.meta;
-//   const currentUser = authenticationService.currentUserValue;
+router.beforeEach((to, from, next) => {
+  const { authorize } = to.meta;
+  const user = getUser();
 
-//   if (authorize.length) {
-//     if (!currentUser) {
-//       return next({ path: '/l' });
-//     }
+  if (authorize.length) {
+    if (Object.keys(user).length === 0) {
+      return next({ path: specialPaths.includes(from.path) ? from.path : '/' });
+    }
 
-//     if (authorize.length && !authorize.includes(currentUser.role)) {
-//       return next({ path: '/r' });
-//     }
-//   }
-//   return next();
-// });
+    store.dispatch('user/loginSuccess', { ...user });
+
+    if (authorize.length && !authorize.includes(user.role)) {
+      return next({ path: specialPaths.includes(from.path) ? from.path : '/' });
+    }
+  }
+  return next();
+});
 
 export default router;

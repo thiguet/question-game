@@ -1,3 +1,5 @@
+import { QuestionsAPI } from '@/_config/config';
+
 export const handleResponse = async (resp) => {
   try {
     return resp.json();
@@ -34,3 +36,6 @@ export const requestOptions = {
     };
   },
 };
+
+export const doRequest = async (graphQL) => fetch(`${QuestionsAPI}`, requestOptions.post(graphQL))
+  .then(handleResponse);

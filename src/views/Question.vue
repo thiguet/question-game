@@ -6,6 +6,7 @@
           <v-col cols="12">
             <v-textarea
               name="question-input"
+              :loading="loading"
               filled
               label="Pergunta"
               auto-grow
@@ -18,18 +19,18 @@
           </v-col>
         </v-row>
         <v-row justify="center" align="center"
-          v-for="answer in answers" :key="answer.id">
-            <v-col cols="8" md="10">
+          v-for="(answer, index) in answers" :key="answer.id">
+            <v-col cols="9" md="10">
               <v-text-field md="1"
-                v-model="answer.text" readonly label="Resposta" required></v-text-field>
+                v-model="answer.description" readonly label="Resposta" required></v-text-field>
             </v-col>
-            <v-col cols="4" md="2">
+            <v-col cols="3" md="2">
               <v-radio-group v-model="selectedAnswer">
                 <v-radio
                   class="sm-12"
                   :key="answer.id"
-                  label="Correta"
-                  :value="answer.id"
+                  label=""
+                  :value="index"
                 ></v-radio>
               </v-radio-group>
             </v-col>
@@ -47,33 +48,66 @@
 </template>
 
 <script>
+import Vue from 'vue';
+import { createNamespacedHelpers } from 'vuex';
 
-const questionsData = {
-  question: 'Por que esta matéria é tão importante ?',
-  answers: [
-    {
-      id: 0,
-      text: 'Não sei',
-    },
-    {
-      id: 1,
-      text: 'Sem tempo irmão',
-    },
-  ],
-};
+const { mapState, mapActions, mapGetters } = createNamespacedHelpers('question');
 
 export default {
   name: 'Question',
   data: () => ({
-    answers: questionsData.answers,
-    question: questionsData.question,
-    valid: false,
+    loading: false,
     lazy: false,
-    selectedAnswer: new Date().getMilliseconds() % questionsData.answers.length,
+    selectedAnswer: null,
   }),
-  methods: {
-    submitAnswer() {
+  computed: {
+    ...mapState(['answers', 'question', 'questionId']),
+    valid: {
+      get() { return this.selectedAnswer !== null; },
+      set() {},
     },
+    isGameOver() {
+      return this.$store.state.game.isGameOver;
+    },
+  },
+  watch: {
+    isGameOver() {
+      this.checkGameOver();
+    },
+  },
+  methods: {
+    ...mapGetters(['hasNextQuestion']),
+    ...mapActions(['sendAnswer', 'getSessionQuestions', 'nextQuestion']),
+    submitAnswer() {
+      if (!this.$store.state.game.isGameOver) {
+        this.sendAnswer({
+          questionId: this.questionId,
+          answerId: this.answers[this.selectedAnswer].id,
+          userId: this.$store.state.user.user.id,
+        }).then(() => {
+          if (this.hasNextQuestion()) {
+            this.loading = true;
+            Vue.nextTick(() => this.nextQuestion().then(() => { this.loading = false; }));
+          } else {
+            this.$store.dispatch('game/gameOver');
+            this.$router.push('r');
+          }
+        });
+      }
+    },
+    getRandomAnswer() {
+      return new Date().getMilliseconds() % this.answers.length;
+    },
+    checkGameOver() {
+      if (this.$store.state.game.isGameOver) {
+        this.$router.push('/r');
+      }
+    },
+  },
+  mounted() {
+    this.loading = true;
+    Vue.nextTick(() => this.getSessionQuestions().then(() => { this.loading = false; }));
+    this.checkGameOver();
   },
 };
 </script>

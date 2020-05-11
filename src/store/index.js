@@ -1,41 +1,52 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
 
+import userModule from '@/store/user';
+import questionModule from '@/store/questions';
+import gameModule from '@/store/game';
+import rankingModule from '@/store/ranking';
+
+import {
+  wsState,
+  wsMutations,
+  wsActions,
+  wsGetters,
+} from '@/store/wsocket';
+
 Vue.use(Vuex);
 
 export default new Vuex.Store({
+  modules: {
+    user: { ...userModule },
+    question: { ...questionModule },
+    game: { ...gameModule },
+    ranking: { ...rankingModule },
+  },
   state: {
-    user: {},
-    socket: {
-      isConnected: false,
-      message: '',
-      reconnectError: false,
-    },
+    ...wsState,
+    showDialog: false,
+    dialogText: '',
   },
   mutations: {
-    SOCKET_ONOPEN(state, event) {
-      Vue.prototype.$socket = event.currentTarget;
-      state.socket.isConnected = true;
+    ...wsMutations,
+    changeDialogStatus(state, bool) {
+      state.showDialog = bool;
     },
-    SOCKET_ONCLOSE(state) {
-      state.socket.isConnected = false;
-    },
-    SOCKET_ONERROR(state, event) {
-      console.error(state, event);
-    },
-    SOCKET_ONMESSAGE(state, message) {
-      state.socket.message = message;
-    },
-    SOCKET_RECONNECT(state, count) {
-      console.info(state, count);
-    },
-    SOCKET_RECONNECT_ERROR(state) {
-      state.socket.reconnectError = true;
+    changeDialogText(state, bool) {
+      state.dialogText = bool;
     },
   },
   actions: {
-    sendMessage: (context, message) => {
-      Vue.prototype.$socket.send(message);
+    ...wsActions,
+    showDialog({ commit }, dialogText) {
+      commit('changeDialogText', dialogText);
+      commit('changeDialogStatus', true);
     },
+    closeDialog({ commit }) {
+      commit('changeDialogStatus', false);
+    },
+  },
+  getters: {
+    ...wsGetters,
   },
 });

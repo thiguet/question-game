@@ -18,19 +18,31 @@
 </template>
 
 <script>
-import { newUser } from '@/_services/userServices';
+import { createNamespacedHelpers } from 'vuex';
+
+const { mapActions } = createNamespacedHelpers('user');
 
 export default {
-  name: 'Register',
+  name: 'Admin',
   data: () => ({
     name: '',
     pass: '',
   }),
   methods: {
-    login() {
-      if (this.name) {
-        newUser(this.name);
+    ...mapActions({
+      loginAction: 'login',
+    }),
+    async login() {
+      if (this.name && this.pass) {
+        const userData = await this.loginAction({
+          name: this.name,
+          pass: this.pass,
+        });
+        if (userData) this.redirectToHome();
       }
+    },
+    redirectToHome() {
+      this.$router.push('c');
     },
   },
 };
