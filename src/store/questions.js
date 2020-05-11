@@ -22,16 +22,14 @@ export default {
       state.questionId = 0;
       state.questionIndex = 0;
       state.question = '';
-      state.answers = [
-        {
-          description: '',
-          correct: true,
-        },
-        {
-          description: '',
-          correct: false,
-        },
-      ];
+      state.answers = [{
+        description: '',
+        correct: true,
+      },
+      {
+        description: '',
+        correct: false,
+      }];
       state.rightAnswer = 0;
     },
     setRightAnswer(state, rightAnswer) {
