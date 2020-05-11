@@ -1,3 +1,3 @@
-export const QuestionsAPI = 'http://localhost:4000/graphql';
+export const QuestionsAPI = 'https://questions-game-server.herokuapp.com/graphql';
 
-export const WSAPI = 'ws://localhost:9090';
+export const WSAPI = 'ws://questions-game-ws.herokuapp.com/';

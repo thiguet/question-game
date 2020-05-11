@@ -22,14 +22,15 @@ export default {
       state.questionId = 0;
       state.questionIndex = 0;
       state.question = '';
-      state.answers = [{
+      state.answers = [
+        {
           description: '',
           correct: true,
         },
         {
           description: '',
           correct: false,
-        }
+        },
       ];
       state.rightAnswer = 0;
     },
@@ -71,7 +72,7 @@ export default {
     },
     newQuestion: async ({ getters, dispatch }) => {
       const { question, answers, rightAnswer } = getters;
-      const { data, errors } = await newQuestion(question, answers, rightAnswer);
+      const { errors } = await newQuestion(question, answers, rightAnswer);
       if (errors) {
         dispatch('showDialog', 'Não foi possível salvar a pergunta! Favor tentar novamente!', { root: true });
       } else {
