@@ -127,7 +127,7 @@ export default {
 }
 
 .answer-text {
-  font-size: 12px !important; 
+  font-size: 12px !important;
 }
 
 .question-text {
