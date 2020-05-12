@@ -6,14 +6,15 @@
           <v-col cols="12">
             <v-textarea
               name="question-input"
+              rows="1"
+              :key="question"
               :loading="loading"
               filled
               label="Pergunta"
               auto-grow
               outlined
-              rows="1"
-              row-height="15"
               readonly
+              class="question-text"
               :value="question"
             ></v-textarea>
           </v-col>
@@ -21,8 +22,16 @@
         <v-row justify="center" align="center"
           v-for="(answer, index) in answers" :key="answer.id">
             <v-col cols="9" md="10">
-              <v-text-field md="1"
-                v-model="answer.description" readonly label="Resposta" required></v-text-field>
+              <v-textarea md="1"
+                rows="1"
+                v-model="answer.description"
+                :key="index"
+                auto-grow
+                readonly
+                label="Resposta"
+                required
+                class="answer-text"
+                ></v-textarea>
             </v-col>
             <v-col cols="3" md="2">
               <v-radio-group v-model="selectedAnswer">
@@ -116,4 +125,13 @@ export default {
 .v-input__slot {
   background: none !important;
 }
+
+.answer-text {
+  font-size: 12px !important; 
+}
+
+.question-text {
+  font-size: 12px !important;
+}
+
 </style>
